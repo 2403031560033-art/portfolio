@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 import Navbar from "@/components/layout/Navbar";
 import CursorGlow from "@/components/effects/CursorGlow";
@@ -52,6 +53,7 @@ export default function RootLayout({
           {children}
           <Toaster closeButton position="bottom-right" theme="dark" richColors />
         </SmoothScroll>
+        <Analytics />
       </body>
     </html>
   );
