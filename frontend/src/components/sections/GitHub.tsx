@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Star, GitFork, BookOpen, ExternalLink } from "lucide-react";
+import { Star, GitFork, BookOpen, ExternalLink, Users, FolderGit, Sparkles } from "lucide-react";
 import { Github } from "@/components/ui/Icons";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Button from "@/components/ui/Button";
 import { PROFILE } from "@/lib/constants";
-import { fadeInUp } from "@/lib/animations";
 
 const REPOS = [
   {
@@ -16,7 +15,7 @@ const REPOS = [
     stars: 12,
     forks: 4,
     language: "TypeScript",
-    langColor: "bg-blue-400",
+    langColor: "bg-blue-500",
     url: `${PROFILE.github}/vendorvue`
   },
   {
@@ -34,40 +33,64 @@ const REPOS = [
     stars: 10,
     forks: 3,
     language: "JavaScript",
-    langColor: "bg-yellow-400",
+    langColor: "bg-yellow-500",
     url: `${PROFILE.github}/aalok-solar-dashboard`
   }
 ];
 
 const getLangColor = (lang: string) => {
   switch (lang?.toLowerCase()) {
-    case "typescript": return "bg-blue-400";
-    case "javascript": return "bg-yellow-400";
+    case "typescript": return "bg-blue-500";
+    case "javascript": return "bg-yellow-500";
     case "python": return "bg-green-500";
-    case "css": return "bg-purple-400";
-    case "html": return "bg-orange-400";
+    case "css": return "bg-purple-500";
+    case "html": return "bg-orange-500";
+    case "go": return "bg-cyan-500";
+    case "rust": return "bg-orange-600";
     default: return "bg-slate-500";
   }
 };
 
 export default function GitHub() {
   const username = PROFILE.github.split("/").pop() || "2403031560033-art";
+  const [profileData, setProfileData] = useState<any>({
+    name: "Satyam Patel",
+    bio: "AI-native Full Stack Engineer specializing in React.js, Next.js, Node.js, Flask, FastAPI, MongoDB, PostgreSQL, Socket.IO, and AI integrations.",
+    publicRepos: 18,
+    followers: 24,
+    following: 10,
+    avatarUrl: "https://github.com/identicons/satyam-patel.png",
+    githubUrl: PROFILE.github
+  });
   const [reposList, setReposList] = useState<any[]>(REPOS);
+  const [heatmapError, setHeatmapError] = useState(false);
 
   useEffect(() => {
-    const fetchRepos = async () => {
+    const fetchGithubData = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      
+      // Fetch profile data
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+        const profileResponse = await fetch(`${apiUrl}/api/github/profile`);
+        if (profileResponse.ok) {
+          const pData = await profileResponse.json();
+          setProfileData(pData);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch dynamic GitHub profile. Using fallback.");
+      }
+
+      // Fetch repos data
+      try {
         const response = await fetch(`${apiUrl}/api/github/repos`);
         if (response.ok) {
           const data = await response.json();
-          // Filter to match our highlights, or show top fetched repositories
           if (Array.isArray(data) && data.length > 0) {
-            const mapped = data.slice(0, 3).map((repo: any) => ({
+            const mapped = data.map((repo: any) => ({
               name: repo.name,
               description: repo.description || "No description provided.",
-              stars: repo.stars,
-              forks: repo.forks,
+              stars: repo.stars || 0,
+              forks: repo.forks || 0,
               language: repo.language || "TypeScript",
               langColor: getLangColor(repo.language),
               url: repo.url
@@ -79,13 +102,88 @@ export default function GitHub() {
         console.warn("Failed to fetch dynamic GitHub repos. Falling back to static data.");
       }
     };
-    fetchRepos();
+    fetchGithubData();
   }, []);
 
-  // High-end svg themes matching our design system color variables
-  const statsCardUrl = `https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=dark&bg_color=0A0A0F&title_color=7C3AED&icon_color=06B6D4&text_color=94A3B8&border_color=ffffff0d&hide_border=false`;
-  const topLangsCardUrl = `https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=dark&bg_color=0A0A0F&title_color=7C3AED&text_color=94A3B8&border_color=ffffff0d&hide_border=false`;
+  const totalStars = reposList.reduce((acc, repo) => acc + repo.stars, 0);
+  const totalForks = reposList.reduce((acc, repo) => acc + repo.forks, 0);
+
+  const getLanguageStats = () => {
+    const langCounts: Record<string, number> = {};
+    let totalLangs = 0;
+
+    reposList.forEach((repo) => {
+      const lang = repo.language;
+      if (lang) {
+        langCounts[lang] = (langCounts[lang] || 0) + 1;
+        totalLangs++;
+      }
+    });
+
+    if (totalLangs === 0) {
+      return [
+        { name: "TypeScript", percentage: 65, color: "bg-blue-500" },
+        { name: "JavaScript", percentage: 20, color: "bg-yellow-500" },
+        { name: "Python", percentage: 15, color: "bg-green-500" },
+      ];
+    }
+
+    return Object.entries(langCounts)
+      .map(([name, count]) => {
+        const percentage = Math.round((count / totalLangs) * 100);
+        return {
+          name,
+          percentage,
+          color: getLangColor(name)
+        };
+      })
+      .sort((a, b) => b.percentage - a.percentage)
+      .slice(0, 5); // top 5
+  };
+
   const contributionChartUrl = `https://ghchart.rshah.org/7C3AED/${username}`;
+
+  // Renders a beautiful mock grid in case the external contribution chart fails
+  const renderMockContributions = () => {
+    const cols = 45;
+    const rows = 7;
+    const colors = [
+      "bg-white/5",
+      "bg-violet-950/40",
+      "bg-violet-700/50",
+      "bg-violet-500/70",
+      "bg-cyan-500/90",
+    ];
+
+    return (
+      <div className="flex flex-col gap-1.5 w-full items-center">
+        <div className="flex gap-1 overflow-x-auto max-w-full pb-2 select-none justify-start w-full">
+          {Array.from({ length: cols }).map((_, colIdx) => (
+            <div key={colIdx} className="flex flex-col gap-1 flex-shrink-0">
+              {Array.from({ length: rows }).map((_, rowIdx) => {
+                const val = (colIdx * 3 + rowIdx * 4) % 5;
+                return (
+                  <div
+                    key={rowIdx}
+                    className={`w-2.5 h-2.5 rounded-sm transition-all duration-300 hover:scale-125 ${colors[val]}`}
+                  />
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mt-1 w-full max-w-xs">
+          <span>Less</span>
+          <div className="flex gap-1">
+            {colors.map((c, i) => (
+              <div key={i} className={`w-2 h-2 rounded-sm ${c}`} />
+            ))}
+          </div>
+          <span>More</span>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section id="github" className="relative py-24 bg-[#0A0A0F]/90">
@@ -95,9 +193,9 @@ export default function GitHub() {
       <div className="mx-auto max-w-7xl px-6 md:px-8">
         <SectionHeading title="Open Source & Activity" subtitle="GitHub Pulse" />
 
-        {/* Dynamic Readme stats embedded cards */}
+        {/* Dynamic native dashboard cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-12">
-          {/* Left - Readme stats */}
+          {/* Left - Native stats & languages dashboard */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -105,40 +203,120 @@ export default function GitHub() {
             transition={{ duration: 0.5 }}
             className="lg:col-span-8 space-y-6"
           >
-            <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.01] backdrop-blur-md">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider font-mono mb-4 flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-violet-400" />
-                <span>GitHub Stats & Languages</span>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <img
-                  src={statsCardUrl}
-                  alt="Satyam Patel's GitHub Stats"
-                  className="w-full h-auto rounded-2xl border border-white/5"
-                  loading="lazy"
-                />
-                <img
-                  src={topLangsCardUrl}
-                  alt="Satyam Patel's Top Languages"
-                  className="w-full h-auto rounded-2xl border border-white/5"
-                  loading="lazy"
-                />
+            {/* Dashboard panels grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Native Stats Panel */}
+              <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.01] backdrop-blur-md flex flex-col justify-between h-full min-h-[300px]">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider font-mono mb-6 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-violet-400" />
+                    <span>Developer Metrics</span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all duration-300">
+                      <div className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <span className="text-violet-400"><FolderGit className="h-5 w-5" /></span>
+                        <span>{profileData.publicRepos}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono mt-1.5 uppercase tracking-wider">Repositories</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all duration-300">
+                      <div className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <span className="text-amber-400"><Star className="h-5 w-5 fill-amber-400/10" /></span>
+                        <span>{totalStars}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono mt-1.5 uppercase tracking-wider">Stars Earned</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all duration-300">
+                      <div className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <span className="text-cyan-400"><GitFork className="h-5 w-5" /></span>
+                        <span>{totalForks}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono mt-1.5 uppercase tracking-wider">Repo Forks</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-all duration-300">
+                      <div className="text-2xl font-bold text-slate-100 flex items-center gap-2">
+                        <span className="text-pink-400"><Users className="h-5 w-5" /></span>
+                        <span>{profileData.followers}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 font-mono mt-1.5 uppercase tracking-wider">Followers</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-white/5 flex items-center gap-3">
+                  <img 
+                    src={profileData.avatarUrl} 
+                    alt={profileData.name} 
+                    className="w-9 h-9 rounded-full border border-white/10"
+                  />
+                  <div className="overflow-hidden">
+                    <p className="text-xs font-semibold text-slate-200 truncate">{profileData.name}</p>
+                    <a 
+                      href={profileData.githubUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-[10px] text-violet-400 hover:text-violet-300 flex items-center gap-1 mt-0.5"
+                    >
+                      <span>@{username}</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Native Languages Panel */}
+              <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.01] backdrop-blur-md flex flex-col h-full min-h-[300px]">
+                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider font-mono mb-6 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-cyan-400" />
+                  <span>Top Languages</span>
+                </h3>
+                <div className="flex-1 flex flex-col justify-center space-y-4">
+                  {getLanguageStats().map((lang, idx) => (
+                    <div key={idx} className="space-y-1.5">
+                      <div className="flex justify-between items-center text-xs font-mono text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2.5 h-2.5 rounded-full ${lang.color}`} />
+                          <span>{lang.name}</span>
+                        </div>
+                        <span>{lang.percentage}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${lang.percentage}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1, delay: idx * 0.1 }}
+                          className={`h-full rounded-full ${lang.color}`}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Heatmap graph container */}
             <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.01] backdrop-blur-md overflow-hidden">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider font-mono mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider font-mono mb-5 flex items-center gap-2">
                 <Github className="h-4 w-4 text-cyan-400" />
                 <span>Contribution Heatmap</span>
               </h3>
-              <div className="overflow-x-auto py-2 flex justify-center">
-                <img
-                  src={contributionChartUrl}
-                  alt="Satyam Patel's Contribution Chart"
-                  className="max-w-full h-auto min-w-[600px] object-contain invert brightness-125"
-                  loading="lazy"
-                />
+              <div className="overflow-x-auto py-1 flex justify-center w-full">
+                {!heatmapError ? (
+                  <img
+                    src={contributionChartUrl}
+                    alt="GitHub Contribution Chart"
+                    className="max-w-full h-auto min-w-[600px] object-contain invert brightness-125 select-none"
+                    loading="lazy"
+                    onError={() => setHeatmapError(true)}
+                  />
+                ) : (
+                  renderMockContributions()
+                )}
               </div>
             </div>
           </motion.div>
@@ -151,7 +329,7 @@ export default function GitHub() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="lg:col-span-4 space-y-4"
           >
-            {reposList.map((repo, idx) => (
+            {reposList.slice(0, 3).map((repo, idx) => (
               <a
                 key={idx}
                 href={repo.url}
@@ -209,3 +387,4 @@ export default function GitHub() {
     </section>
   );
 }
+
