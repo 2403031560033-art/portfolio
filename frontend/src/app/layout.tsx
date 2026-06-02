@@ -45,7 +45,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased selection:bg-violet-500/30 selection:text-white">
+      <body className="antialiased selection:bg-[#A78BFA]/30 selection:text-white">
         <SmoothScroll>
           <CursorGlow />
           <Navbar />

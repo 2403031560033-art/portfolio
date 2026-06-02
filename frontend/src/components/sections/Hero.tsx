@@ -62,13 +62,13 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="text-5xl font-black tracking-tight text-slate-100 sm:text-7xl md:text-8xl select-none"
+          className="font-display text-5xl font-semibold tracking-tight text-white sm:text-7xl md:text-8xl select-none"
         >
           I&apos;m{" "}
           <span
-            className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
+            className="bg-gradient-to-r from-tertiary via-primary to-secondary bg-clip-text text-transparent"
             style={{
-              filter: "drop-shadow(0 0 40px rgba(124, 58, 237, 0.2)) drop-shadow(0 0 80px rgba(6, 182, 212, 0.1))",
+              filter: "drop-shadow(0 0 40px rgba(252, 211, 77, 0.2)) drop-shadow(0 0 80px rgba(45, 212, 191, 0.1))",
             }}
           >
             {PROFILE.name}
@@ -92,7 +92,7 @@ export default function Hero() {
             wrapper="span"
             speed={50}
             repeat={Infinity}
-            className="after:content-['|'] after:animate-pulse after:ml-0.5 after:text-violet-400"
+            className="after:content-['|'] after:animate-pulse after:ml-0.5 after:text-primary"
           />
         </motion.div>
 

@@ -30,8 +30,8 @@ export default function Button({
     "transition-all duration-300 overflow-hidden cursor-pointer select-none z-10";
 
   const variantStyles = {
-    primary: "bg-violet-600 text-white shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:bg-violet-500 hover:shadow-[0_0_30px_rgba(124,58,237,0.45)] border border-violet-500/20",
-    secondary: "bg-cyan-500 text-slate-950 hover:bg-cyan-400 border border-cyan-400/20 shadow-[0_0_20px_rgba(6,182,212,0.15)]",
+    primary: "btn-amber border-none shadow-[0_0_20px_rgba(252,211,77,0.2)]",
+    secondary: "bg-secondary text-slate-950 hover:brightness-110 border border-secondary/20 shadow-[0_0_20px_rgba(45,212,191,0.15)]",
     outline: "border border-white/10 bg-white/5 backdrop-blur-md text-white hover:border-white/30 hover:bg-white/10",
     ghost: "text-slate-400 hover:text-white hover:bg-white/5",
   };

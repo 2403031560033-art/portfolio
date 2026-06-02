@@ -169,6 +169,21 @@ function ProjectCardBody({
     setCoords({ x: e.clientX - left, y: e.clientY - top });
   };
 
+  // Map category to color scheme
+  const categoryToBorderClass = {
+    "AI/ML": "glass-card-purple",
+    "Full Stack": "glass-card-teal",
+    "Dashboard": "glass-card-amber",
+  };
+  const categoryToAccentClass = {
+    "AI/ML": "text-primary",
+    "Full Stack": "text-secondary",
+    "Dashboard": "text-tertiary",
+  };
+  
+  const glassBorderClass = categoryToBorderClass[project.category as keyof typeof categoryToBorderClass] || "glass-card-purple";
+  const accentClass = categoryToAccentClass[project.category as keyof typeof categoryToAccentClass] || "text-primary";
+
   return (
     <div
       ref={cardRef}
@@ -176,8 +191,10 @@ function ProjectCardBody({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
-        "relative rounded-3xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] p-6 md:p-8 backdrop-blur-xl transition-all duration-300 overflow-hidden shadow-2xl",
-        isExpanded ? "border-violet-500/20" : ""
+        "relative p-6 md:p-8 overflow-hidden shadow-2xl z-10",
+        "glass-card",
+        glassBorderClass,
+        isExpanded ? "border-primary/50" : ""
       )}
     >
       {/* Interactive Cursor Radial Gradient Overlay */}
@@ -195,10 +212,10 @@ function ProjectCardBody({
         {/* Card Header */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <span className="text-xs uppercase tracking-widest text-violet-400 font-bold font-mono">
+            <span className={cn("text-xs uppercase tracking-widest font-bold font-mono", accentClass)}>
               {project.category}
             </span>
-            <h3 className="text-2xl font-black text-slate-100 mt-1">
+            <h3 className="font-display text-2xl font-semibold text-white mt-1">
               {project.title}
             </h3>
             <p className="text-sm text-slate-400 font-semibold font-mono mt-0.5">
@@ -260,7 +277,7 @@ function ProjectCardBody({
               <span className="block text-xs text-slate-500 font-mono tracking-wide uppercase">
                 {metric.label}
               </span>
-              <span className="block text-sm md:text-base font-extrabold text-cyan-400">
+              <span className={cn("block text-sm md:text-base font-extrabold", accentClass)}>
                 {metric.value}
               </span>
             </div>
@@ -310,7 +327,7 @@ function ProjectCardBody({
               <div className="pt-6 border-t border-white/5 mt-6 space-y-4">
                 {/* Role */}
                 <div className="flex items-center gap-2 text-xs md:text-sm">
-                  <BarChart2 className="h-4 w-4 text-violet-400 shrink-0" />
+                  <BarChart2 className={cn("h-4 w-4 shrink-0", accentClass)} />
                   <span className="text-slate-400">Role:</span>
                   <span className="font-bold text-slate-200">{project.role}</span>
                 </div>
@@ -318,7 +335,7 @@ function ProjectCardBody({
                 {/* Architecture Highlights */}
                 <div>
                   <div className="flex items-center gap-2 text-xs md:text-sm text-slate-400 mb-2 font-semibold">
-                    <Layers className="h-4 w-4 text-cyan-400" />
+                    <Layers className={cn("h-4 w-4", accentClass)} />
                     <span>Architecture Highlights:</span>
                   </div>
                   <ul className="space-y-2 text-xs md:text-sm text-slate-400 pl-6 list-disc">
