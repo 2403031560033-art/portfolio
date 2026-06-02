@@ -67,39 +67,23 @@ export default function GitHub() {
 
   useEffect(() => {
     const fetchGithubData = async () => {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-      
-      // Fetch profile data
+      // Fetch combined profile and repos data from our new Next.js internal API route
       try {
-        const profileResponse = await fetch(`${apiUrl}/api/github/profile`);
-        if (profileResponse.ok) {
-          const pData = await profileResponse.json();
-          setProfileData(pData);
-        }
-      } catch (err) {
-        console.warn("Failed to fetch dynamic GitHub profile. Using fallback.");
-      }
-
-      // Fetch repos data
-      try {
-        const response = await fetch(`${apiUrl}/api/github/repos`);
+        const response = await fetch("/api/github");
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const mapped = data.map((repo: any) => ({
-              name: repo.name,
-              description: repo.description || "No description provided.",
-              stars: repo.stars || 0,
-              forks: repo.forks || 0,
-              language: repo.language || "TypeScript",
+          if (data.profile) setProfileData(data.profile);
+          if (data.repos && Array.isArray(data.repos)) {
+            const mapped = data.repos.map((repo: any) => ({
+              ...repo,
               langColor: getLangColor(repo.language),
-              url: repo.url
+              description: repo.description || "No description provided."
             }));
             setReposList(mapped);
           }
         }
       } catch (err) {
-        console.warn("Failed to fetch dynamic GitHub repos. Falling back to static data.");
+        console.warn("Failed to fetch dynamic GitHub profile from internal API.");
       }
     };
     fetchGithubData();

@@ -20,23 +20,13 @@ export default function Projects() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-        const response = await fetch(`${apiUrl}/api/projects`);
+        const response = await fetch("/api/projects");
         if (response.ok) {
           const data = await response.json();
-          // Merge dynamic stars/forks with static project properties
-          const merged = PROJECTS.map(staticProj => {
-            const dynamicProj = data.find((d: any) => d.id === staticProj.id);
-            return {
-              ...staticProj,
-              githubStars: dynamicProj?.githubStars || 0,
-              githubForks: dynamicProj?.githubForks || 0,
-            };
-          });
-          setProjectsList(merged);
+          setProjectsList(data);
         }
       } catch (err) {
-        console.warn("Failed to fetch dynamic projects from backend. Falling back to static data.");
+        console.warn("Failed to fetch dynamic projects from internal API.");
       }
     };
     fetchProjects();
